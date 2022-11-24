@@ -35,12 +35,10 @@ public class Servidor {
 				System.out.println("Servidor: conexao feita");
 				DataInputStream entrada = new DataInputStream(conexaoCliente.getInputStream());
 				String string = entrada.readUTF();
-				System.out.println(string);
 				
 				List<Socket> storeConnections = new ArrayList<>();
 				for(Loja loja : listaLojas) {
 					int port = loja.getPort();
-					System.out.println(loja.getNome());
 					Socket aux = new Socket("localhost", port);
 					DataOutputStream requisicao = new DataOutputStream(aux.getOutputStream());
 					
