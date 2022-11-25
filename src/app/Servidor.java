@@ -16,6 +16,7 @@ public class Servidor {
 	 */
 	public static void main(String[] args) {
 
+		Log log = new Log("log");
 		try (ServerSocket ss = new ServerSocket(5000)) {
 			Loja[] tempList = {
 				new Loja("Magazine Luiza", 8001),
@@ -26,35 +27,41 @@ public class Servidor {
 			};
 			List<Loja> listaLojas = Arrays.asList(tempList);
 			
-			//TODO gerar uma lista de lojas (threads), cada instancia de loja ja abre um ServerSocket
-			// conectar nesses sockets e fazer a mesma busca por palavras, retornar tudo aqui (no server), e juntar em uma res só
-			
 			while (true) {
+				log.clear();
 				System.out.println("Servidor aguardando um cliente ...");
 				Socket conexaoCliente = ss.accept();
 				System.out.println("Servidor: conexao feita");
 				DataInputStream entrada = new DataInputStream(conexaoCliente.getInputStream());
 				String string = entrada.readUTF();
 				
-				List<Socket> storeConnections = new ArrayList<>();
-				for(Loja loja : listaLojas) {
-					int port = loja.getPort();
-					Socket aux = new Socket("localhost", port);
-					DataOutputStream requisicao = new DataOutputStream(aux.getOutputStream());
-					
-					requisicao.writeUTF(string);
-					storeConnections.add(aux);
+				if(string.contains("૑")) {
+					log.register("ADMIN: LOG REQUEST");
+					DataOutputStream resposta = new DataOutputStream(conexaoCliente.getOutputStream());
+					log.export();
+					String aux = log.readLogFile();
+					resposta.writeUTF(aux.substring(0, aux.length()));
+				}else {
+					List<Socket> storeConnections = new ArrayList<>();
+					for(Loja loja : listaLojas) {
+						int port = loja.getPort();
+						Socket aux = new Socket("localhost", port);
+						DataOutputStream requisicao = new DataOutputStream(aux.getOutputStream());
+						
+						requisicao.writeUTF(string);
+						storeConnections.add(aux);
+					}
+					StringBuilder sb = new StringBuilder();
+					for(Socket storeConnection : storeConnections) {
+						DataInputStream response = new DataInputStream(storeConnection.getInputStream());
+						sb.append(response.readUTF());
+					}
+					DataOutputStream resposta = new DataOutputStream(conexaoCliente.getOutputStream());
+					String aux = sb.toString();
+					log.register("|"+string+"|["+aux.replaceAll("\n", ", ").replaceAll("\t", "-")+"]");
+					log.export();
+					resposta.writeUTF(aux.substring(0, aux.length()));
 				}
-				
-				StringBuilder sb = new StringBuilder();
-				for(Socket storeConnection : storeConnections) {
-					DataInputStream response = new DataInputStream(storeConnection.getInputStream());
-					sb.append(response.readUTF());
-				}
-				DataOutputStream resposta = new DataOutputStream(conexaoCliente.getOutputStream());
-				String aux = sb.toString();
-				resposta.writeUTF(aux.substring(0, aux.length()));
-				
 			}
 //            ss.close();
 

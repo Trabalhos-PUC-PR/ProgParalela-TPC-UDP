@@ -26,16 +26,6 @@ public class Cliente {
 
 			// entrada quer dizer a resposta da requisição
 			DataInputStream entrada = new DataInputStream(conexao.getInputStream());
-//			Object rawRes = entrada.readObject();
-//			List<Produto> res = new ArrayList<>();
-//			if (rawRes.getClass() == ArrayList.class) {
-//				res = (List<Produto>) rawRes;
-//			} else {
-//				System.err.println("ERROR parsing server response");
-//			}
-//			for (Produto p : res) {
-//				System.out.println(p);
-//			}
 			System.out.println(entrada.readUTF());
 
 			conexao.close(); // encerra a conexao com o servidor
